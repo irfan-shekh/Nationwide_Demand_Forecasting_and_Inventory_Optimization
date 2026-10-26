@@ -163,7 +163,8 @@ pip install -r requirements.txt
 
 ### 2. Dataset Setup
 The project uses the official Kaggle M5 Forecasting Competition dataset:
-- Place `calendar.csv`, `sales_train_validation.csv`, and `sell_prices.csv` in the project root directory.
+- Place raw CSV files (`calendar.csv`, `sales_train_validation.csv`, `sales_train_evaluation.csv`, `sell_prices.csv`, and `sample_submission.csv`) in the [`data/raw/`](data/raw/) directory.
+- Centralized path resolution in [`config/settings.py`](config/settings.py) automatically resolves from `data/raw/` (with fallback to project root).
 
 ---
 
@@ -171,19 +172,23 @@ The project uses the official Kaggle M5 Forecasting Competition dataset:
 
 Execute the master pipeline to prepare data, train models, evaluate hierarchies, and optimize inventory:
 ```bash
+# Windows:
+.venv\Scripts\python.exe scripts/run_pipeline.py
+
+# Linux/macOS:
 python scripts/run_pipeline.py
 ```
 
 Or execute individual modular stages:
 ```bash
 # Step 1: Prepare stratified benchmark data and quality report
-python scripts/prepare_data.py
+.venv\Scripts\python.exe scripts/prepare_data.py
 
 # Step 2: Train Naive, Seasonal-Naive, LightGBM, and Prophet models
-python scripts/train_models.py
+.venv\Scripts\python.exe scripts/train_models.py
 
 # Step 3: Evaluate retail hierarchy and verify MinT reconciliation
-python scripts/evaluate_models.py
+.venv\Scripts\python.exe scripts/evaluate_models.py
 ```
 
 ---
@@ -192,7 +197,12 @@ python scripts/evaluate_models.py
 
 Launch the responsive Plotly Dash web dashboard locally:
 ```bash
-python app.py
+# Windows (direct via venv):
+.venv\Scripts\python.exe app.py
+
+# Or after activating your virtual environment:
+# .venv\Scripts\activate
+# python app.py
 ```
 Open **[http://127.0.0.1:8050](http://127.0.0.1:8050)** in any modern web browser.
 
@@ -209,12 +219,13 @@ Open **[http://127.0.0.1:8050](http://127.0.0.1:8050)** in any modern web browse
 
 ## ☁️ Google Colab Deep Learning (TFT) Workflow
 
-A self-contained 13-cell notebook is located at:
+A verified, executed 13-cell notebook with cell outputs is located at:
 [`notebooks/colab_tft_training.ipynb`](notebooks/colab_tft_training.ipynb)
 
-- **Environment**: Compatible with free Google Colab T4 GPU instances.
-- **Features**: GPU detection, PyTorch Forecasting `TimeSeriesDataSet`, Temporal Fusion Transformer with multi-quantile loss, baseline comparison, and automated artifact export.
-- **Integration**: Artifacts exported to `/content/artifacts/tft/` integrate directly into the main repository (`artifacts/tft/`), allowing the local dashboard to operate without an active Colab instance.
+- **Environment**: Executed on free Google Colab **Tesla T4 GPU** (14.56 GB VRAM).
+- **Results**: Achieved **0.8886 Test WAPE** and **90.3% empirical interval coverage** on 28-day holdout predictions.
+- **Features**: GPU detection, PyTorch Forecasting `TimeSeriesDataSet` with `NaNLabelEncoder(add_nan=True)`, multi-head attention TFT training, baseline comparison, and automated artifact export.
+- **Integration**: Artifacts exported to `/content/artifacts/tft/` integrate directly into the main repository ([`artifacts/tft/`](artifacts/tft/)), allowing the local dashboard to operate without an active Colab session.
 
 ---
 
