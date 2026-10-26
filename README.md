@@ -3,11 +3,15 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Tests: 24 Passed](https://img.shields.io/badge/Tests-24%20Passed-brightgreen.svg)]()
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Render-46E3B7.svg?logo=render&logoColor=white)](https://nationwide-demand-forecasting-and.onrender.com)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Dashboard: Plotly Dash](https://img.shields.io/badge/dashboard-Plotly%20Dash-orange.svg)](https://dash.plotly.com/)
 [![OR-Tools: 9.15](https://img.shields.io/badge/optimization-Google%20OR--Tools-blueviolet.svg)](https://developers.google.com/optimization)
 
+> 🌐 **Live Web Application**: [https://nationwide-demand-forecasting-and.onrender.com](https://nationwide-demand-forecasting-and.onrender.com)
+
 An enterprise-grade, end-to-end Machine Learning, Hierarchical Time-Series Forecasting, and Operations Research system built for the Walmart M5 retail dataset. Forecasts multi-tier store demand, estimates multi-quantile uncertainty intervals, reconciles predictions across the national retail hierarchy, and generates cost-optimal replenishment recommendations using Google OR-Tools Mixed-Integer Linear Programming (MIP).
+
 
 ---
 
