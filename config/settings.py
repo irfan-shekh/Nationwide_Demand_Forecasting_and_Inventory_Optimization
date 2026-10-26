@@ -13,12 +13,18 @@ RAW_DATA_DIR = BASE_DIR / "data" / "raw"
 PROCESSED_DATA_DIR = BASE_DIR / "data" / "processed"
 SAMPLE_DATA_DIR = BASE_DIR / "data" / "sample"
 
-# Raw M5 Files (in root or data/raw)
-CALENDAR_PATH = BASE_DIR / "calendar.csv"
-SALES_TRAIN_VAL_PATH = BASE_DIR / "sales_train_validation.csv"
-SALES_TRAIN_EVAL_PATH = BASE_DIR / "sales_train_evaluation.csv"
-PRICES_PATH = BASE_DIR / "sell_prices.csv"
-SAMPLE_SUBMISSION_PATH = BASE_DIR / "sample_submission.csv"
+def _resolve_data_path(filename: str) -> Path:
+    raw_p = RAW_DATA_DIR / filename
+    if raw_p.exists():
+        return raw_p
+    return BASE_DIR / filename
+
+# Raw M5 Files (prioritizes data/raw/ then project root)
+CALENDAR_PATH = _resolve_data_path("calendar.csv")
+SALES_TRAIN_VAL_PATH = _resolve_data_path("sales_train_validation.csv")
+SALES_TRAIN_EVAL_PATH = _resolve_data_path("sales_train_evaluation.csv")
+PRICES_PATH = _resolve_data_path("sell_prices.csv")
+SAMPLE_SUBMISSION_PATH = _resolve_data_path("sample_submission.csv")
 
 # Model & Artifact Directories
 MODELS_DIR = BASE_DIR / "models"
