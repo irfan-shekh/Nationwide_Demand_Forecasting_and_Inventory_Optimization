@@ -56,6 +56,10 @@ app.layout = html.Div([
 # Register callbacks
 register_callbacks(app, merged_df, pred_df)
 
+import os
+
 if __name__ == "__main__":
-    logger.info("Starting Dash Web Application on http://127.0.0.1:8050 ...")
-    app.run(debug=False, host="127.0.0.1", port=8050)
+    port = int(os.environ.get("PORT", 8050))
+    logger.info(f"Starting Dash Web Application on http://0.0.0.0:{port} ...")
+    app.run(debug=False, host="0.0.0.0", port=port)
+
