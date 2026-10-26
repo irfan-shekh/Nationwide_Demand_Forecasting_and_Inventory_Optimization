@@ -29,28 +29,87 @@ def create_kpi_card(title: str, value: str, subtitle: str, color_border: str = "
 
 
 def create_header():
-    """Navigation header bar with project branding."""
-    return dbc.Navbar(
+    """Navigation header bar with sleek flexbox alignment and verified GitHub link."""
+    return html.Div(
         dbc.Container([
-            html.A(
-                dbc.Row([
-                    dbc.Col(html.Span("📈", style={"fontSize": "1.8rem", "marginRight": "10px"})),
-                    dbc.Col([
-                        html.H4("Nationwide Retail Demand & Inventory Optimization", className="mb-0 text-white font-weight-bold", style={"fontWeight": "700", "fontSize": "1.2rem"}),
-                        html.Small("Hierarchical Forecasting • Uncertainty Intervals • OR-Tools Replenishment Engine", className="text-white-50")
+            html.Div([
+                # Left brand icon + text
+                html.Div([
+                    html.Div(
+                        "📈",
+                        style={
+                            "fontSize": "1.75rem",
+                            "lineHeight": "1",
+                            "marginRight": "14px",
+                            "display": "flex",
+                            "alignItems": "center"
+                        }
+                    ),
+                    html.Div([
+                        html.H4(
+                            "Nationwide Demand Forecasting & Inventory Optimization",
+                            style={
+                                "color": "#FFFFFF",
+                                "fontWeight": "700",
+                                "fontSize": "1.25rem",
+                                "letterSpacing": "-0.01em",
+                                "margin": "0 0 2px 0"
+                            }
+                        ),
+                        html.Div(
+                            "M5 Retail Forecasting • Deep Learning (TFT) • MinT Reconciliation • Google OR-Tools Replenishment",
+                            style={
+                                "color": "#94A3B8",
+                                "fontSize": "0.82rem",
+                                "fontWeight": "500"
+                            }
+                        )
                     ])
-                ], align="center", className="g-0"),
-                href="#",
-                style={"textDecoration": "none"}
-            ),
-            dbc.Nav([
-                dbc.NavItem(dbc.NavLink("GitHub Repo", href="https://github.com", target="_blank", className="text-white-50")),
-                dbc.NavItem(dbc.NavLink("Docs & Methodology", href="#", className="text-white-50"))
-            ], className="ms-auto", navbar=True)
-        ], fluid=True),
-        color="#0F172A",
-        dark=True,
-        className="mb-3 py-2 px-3 shadow-sm"
+                ], style={"display": "flex", "alignItems": "center"}),
+
+                # Right action badges / links
+                html.Div([
+                    html.A(
+                        [html.Span("⭐ GitHub Repo", style={"fontWeight": "600"})],
+                        href="https://github.com/irfan-shekh/Nationwide_Demand_Forecasting_and_Inventory_Optimization",
+                        target="_blank",
+                        className="btn btn-sm btn-outline-light",
+                        style={
+                            "borderRadius": "6px",
+                            "padding": "0.35rem 0.85rem",
+                            "fontSize": "0.82rem",
+                            "marginRight": "10px",
+                            "borderColor": "rgba(255,255,255,0.25)"
+                        }
+                    ),
+                    html.A(
+                        "📘 Docs & Methodology",
+                        href="https://github.com/irfan-shekh/Nationwide_Demand_Forecasting_and_Inventory_Optimization/blob/main/docs/methodology.md",
+                        target="_blank",
+                        className="btn btn-sm btn-primary",
+                        style={
+                            "borderRadius": "6px",
+                            "padding": "0.35rem 0.85rem",
+                            "fontSize": "0.82rem",
+                            "backgroundColor": "#2563EB",
+                            "border": "none"
+                        }
+                    )
+                ], style={"display": "flex", "alignItems": "center"})
+            ], style={
+                "display": "flex",
+                "alignItems": "center",
+                "justifyContent": "space-between",
+                "width": "100%",
+                "padding": "0.6rem 0"
+            })
+        ], fluid=True, style={"maxWidth": "1500px"}),
+        style={
+            "backgroundColor": "#0F172A",
+            "borderBottom": "1px solid #1E293B",
+            "boxShadow": "0 2px 8px rgba(0,0,0,0.15)",
+            "marginBottom": "1.25rem"
+        }
     )
 
 
