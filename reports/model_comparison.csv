@@ -1,0 +1,6 @@
+Model,Type,sample_count,wape,rmse,mae,bias,rmsse,training_time_sec,coverage_80,avg_width
+Temporal Fusion Transformer (TFT),Deep Learning (Colab Exported),3360,1.0096,1.0301,0.6562,0.0036,0.4986,42.15,0.9202,1.8702
+LightGBM,Global Gradient Boosting,3360,1.0159,1.028,0.6604,0.0299,0.4976,1.83,0.9051,1.781
+Prophet,Time-Series Decomposition,560,1.2864,3.2239,2.2672,0.8073,1.3089,8.8,0.5054,3.0586
+Seasonal-Naive (7-Day),Baseline,3360,1.3095,1.5565,0.8512,0.075,0.7534,0.045,,
+Naive (Last-Value),Baseline,3360,1.5284,1.8542,0.9935,0.275,0.8975,0.023,,

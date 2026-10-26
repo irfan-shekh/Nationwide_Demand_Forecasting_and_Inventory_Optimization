@@ -1,0 +1,20 @@
+{
+  "raw_calendar_rows": 1969,
+  "raw_calendar_cols": 14,
+  "sample_series_count": 120,
+  "sample_stores": [
+    "CA_1",
+    "CA_2",
+    "TX_1",
+    "WI_1"
+  ],
+  "sample_total_rows": 43800,
+  "date_range": [
+    "2015-04-26",
+    "2016-04-24"
+  ],
+  "zero_sales_rate": 0.6331,
+  "mean_daily_sales": 0.92,
+  "intermittent_series_percentage": 96.7,
+  "status": "PASSED_QUALITY_CHECKS"
+}

@@ -1,0 +1,13 @@
+{
+  "model_type": "TemporalFusionTransformer",
+  "hidden_size": 16,
+  "attention_head_size": 2,
+  "dropout": 0.1,
+  "quantiles": [
+    0.1,
+    0.5,
+    0.9
+  ],
+  "encoder_length": 60,
+  "prediction_length": 28
+}

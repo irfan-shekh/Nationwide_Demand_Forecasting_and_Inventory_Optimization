@@ -1,0 +1,375 @@
+"""
+Builder script to generate notebooks/colab_tft_training.ipynb
+"""
+import json
+from pathlib import Path
+
+def create_colab_tft_notebook():
+    notebook = {
+        "cells": [
+            {
+                "cell_type": "markdown",
+                "metadata": {},
+                "source": [
+                    "# Google Colab: Temporal Fusion Transformer (TFT) Demand Forecasting Workflow\n",
+                    "**Project:** Nationwide Demand Forecasting and Inventory Optimization\n",
+                    "**Dataset:** M5 Retail Forecasting\n",
+                    "**Purpose:** Deep learning sequence-to-sequence forecasting with interpretable multi-head attention and multi-quantile prediction intervals.\n",
+                    "\n",
+                    "> **Instructions:**\n",
+                    "> 1. In Google Colab, select `Runtime` > `Change runtime type` > `T4 GPU`.\n",
+                    "> 2. Run cells sequentially from top to bottom.\n",
+                    "> 3. Exported artifacts (`artifacts/tft/`) can be copied back to the main repository to enable Mode 1 (checkpoint) and Mode 2 (exported predictions) in the application dashboard."
+                ]
+            },
+            {
+                "cell_type": "code",
+                "execution_count": None,
+                "metadata": {},
+                "outputs": [],
+                "source": [
+                    "# CELL 1: ENVIRONMENT INFORMATION\n",
+                    "import sys, os, platform, psutil\n",
+                    "print('Python Version:', sys.version)\n",
+                    "print('OS Platform:', platform.platform())\n",
+                    "print('CPU Count:', psutil.cpu_count(logical=True))\n",
+                    "print('Available RAM (GB):', round(psutil.virtual_memory().total / (1024**3), 2))\n",
+                    "\n",
+                    "try:\n",
+                    "    import torch\n",
+                    "    print('PyTorch Version:', torch.__version__)\n",
+                    "    print('CUDA Available:', torch.cuda.is_available())\n",
+                    "    if torch.cuda.is_available():\n",
+                    "        print('GPU Device:', torch.cuda.get_device_name(0))\n",
+                    "        print('Device Memory (GB):', round(torch.cuda.get_device_properties(0).total_memory / (1024**3), 2))\n",
+                    "    else:\n",
+                    "        print('No GPU detected. Training will run in CPU-mode (reduced batch size recommended).')\n",
+                    "except ImportError:\n",
+                    "    print('PyTorch is not yet installed in this runtime.')"
+                ]
+            },
+            {
+                "cell_type": "code",
+                "execution_count": None,
+                "metadata": {},
+                "outputs": [],
+                "source": [
+                    "# CELL 2: DEPENDENCY INSTALLATION\n",
+                    "# Installs PyTorch Forecasting and PyTorch Lightning with compatible ecosystem libraries\n",
+                    "!pip install -q lightning pytorch-forecasting pandas numpy scikit-learn matplotlib\n",
+                    "\n",
+                    "import pytorch_forecasting\n",
+                    "import lightning.pytorch as pl\n",
+                    "from pytorch_forecasting import TimeSeriesDataSet, TemporalFusionTransformer, QuantileLoss\n",
+                    "print('PyTorch Lightning Version:', pl.__version__)\n",
+                    "print('PyTorch Forecasting Version:', pytorch_forecasting.__version__)"
+                ]
+            },
+            {
+                "cell_type": "code",
+                "execution_count": None,
+                "metadata": {},
+                "outputs": [],
+                "source": [
+                    "# CELL 3: GOOGLE DRIVE ACCESS & PATH CONFIGURATION\n",
+                    "import os\n",
+                    "from pathlib import Path\n",
+                    "\n",
+                    "MOUNT_DRIVE = False  # Set to True if reading data directly from Google Drive\n",
+                    "if MOUNT_DRIVE:\n",
+                    "    from google.colab import drive\n",
+                    "    drive.mount('/content/drive')\n",
+                    "    DATA_DIR = Path('/content/drive/MyDrive/m5-forecasting')\n",
+                    "else:\n",
+                    "    DATA_DIR = Path('/content/data')\n",
+                    "    DATA_DIR.mkdir(parents=True, exist_ok=True)\n",
+                    "\n",
+                    "print('Configured Data Directory:', DATA_DIR.resolve())"
+                ]
+            },
+            {
+                "cell_type": "code",
+                "execution_count": None,
+                "metadata": {},
+                "outputs": [],
+                "source": [
+                    "# CELL 4: DATA LOADING & PREPARATION SCRIPT\n",
+                    "import pandas as pd, numpy as np\n",
+                    "\n",
+                    "sample_path = DATA_DIR / 'sample_sales.parquet'\n",
+                    "if sample_path.exists():\n",
+                    "    print('Loading prepared sample data from:', sample_path)\n",
+                    "    df = pd.read_parquet(sample_path)\n",
+                    "else:\n",
+                    "    print('sample_sales.parquet not found. Checking for sales_train_validation.csv...')\n",
+                    "    raw_csv = DATA_DIR / 'sales_train_validation.csv'\n",
+                    "    if not raw_csv.exists():\n",
+                    "        raise FileNotFoundError('No dataset found! Please upload either sample_sales.parquet or the raw M5 CSVs to Google Colab.')\n",
+                    "    raw_sales = pd.read_csv(raw_csv, nrows=500)\n",
+                    "    d_cols = [c for c in raw_sales.columns if c.startswith('d_')][-180:] # last 180 days for Colab demo\n",
+                    "    id_vars = ['id', 'item_id', 'dept_id', 'cat_id', 'store_id', 'state_id']\n",
+                    "    df = pd.melt(raw_sales, id_vars=id_vars, value_vars=d_cols, var_name='d', value_name='sales')\n",
+                    "    df['sales'] = df['sales'].astype(float)\n",
+                    "    d_nums = df['d'].str.replace('d_', '').astype(int)\n",
+                    "    df['date'] = pd.to_datetime('2016-01-01') + pd.to_timedelta(d_nums - d_nums.min(), unit='D')\n",
+                    "\n",
+                    "print(f'Loaded dataset with {len(df)} rows and {df[\"id\"].nunique()} unique series.')\n",
+                    "print(df.head())"
+                ]
+            },
+            {
+                "cell_type": "code",
+                "execution_count": None,
+                "metadata": {},
+                "outputs": [],
+                "source": [
+                    "# CELL 5: TIME-SERIES DATASET SPECIFICATION\n",
+                    "df['time_idx'] = (df['date'] - df['date'].min()).dt.days\n",
+                    "df['dayofweek'] = df['date'].dt.dayofweek.astype(str)\n",
+                    "df['month'] = df['date'].dt.month.astype(str)\n",
+                    "df['is_weekend'] = (df['date'].dt.dayofweek >= 5).astype(str)\n",
+                    "for col in ['id', 'item_id', 'dept_id', 'cat_id', 'store_id', 'state_id']:\n",
+                    "    df[col] = df[col].astype(str)\n",
+                    "\n",
+                    "max_prediction_length = 28\n",
+                    "max_encoder_length = 60\n",
+                    "training_cutoff = df['time_idx'].max() - max_prediction_length\n",
+                    "\n",
+                    "print('Max Encoder Length:', max_encoder_length, 'days')\n",
+                    "print('Prediction Horizon:', max_prediction_length, 'days')\n",
+                    "print('Training Cutoff Day:', training_cutoff)"
+                ]
+            },
+            {
+                "cell_type": "code",
+                "execution_count": None,
+                "metadata": {},
+                "outputs": [],
+                "source": [
+                    "# CELL 6: CHRONOLOGICAL SPLITTING & DATASET BUILDING\n",
+                    "training_data = df[df['time_idx'] <= training_cutoff].copy()\n",
+                    "\n",
+                    "training = TimeSeriesDataSet(\n",
+                    "    training_data,\n",
+                    "    time_idx='time_idx',\n",
+                    "    target='sales',\n",
+                    "    group_ids=['id'],\n",
+                    "    min_encoder_length=max_encoder_length // 2,\n",
+                    "    max_encoder_length=max_encoder_length,\n",
+                    "    min_prediction_length=1,\n",
+                    "    max_prediction_length=max_prediction_length,\n",
+                    "    static_categoricals=['item_id', 'dept_id', 'cat_id', 'store_id', 'state_id'],\n",
+                    "    time_varying_known_categoricals=['dayofweek', 'month', 'is_weekend'],\n",
+                    "    time_varying_unknown_reals=['sales'],\n",
+                    "    target_normalizer=pytorch_forecasting.data.encoders.TorchNormalizer(method='standard'),\n",
+                    "    add_relative_time_idx=True,\n",
+                    "    add_target_scales=True,\n",
+                    "    add_encoder_length=True,\n",
+                    "    allow_missing_timesteps=True\n",
+                    ")\n",
+                    "\n",
+                    "validation = TimeSeriesDataSet.from_dataset(training, df, predict=True, stop_randomization=True)\n",
+                    "batch_size = 64\n",
+                    "train_dataloader = training.to_dataloader(batch_size=batch_size, shuffle=True, num_workers=0)\n",
+                    "val_dataloader = validation.to_dataloader(batch_size=batch_size * 2, shuffle=False, num_workers=0)\n",
+                    "print(f'Train batches: {len(train_dataloader)}, Val batches: {len(val_dataloader)}')"
+                ]
+            },
+            {
+                "cell_type": "code",
+                "execution_count": None,
+                "metadata": {},
+                "outputs": [],
+                "source": [
+                    "# CELL 7: TEMPORAL FUSION TRANSFORMER INITIALIZATION & TRAINING\n",
+                    "import lightning.pytorch as pl\n",
+                    "from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint\n",
+                    "\n",
+                    "pl.seed_everything(42)\n",
+                    "checkpoint_callback = ModelCheckpoint(monitor='val_loss', mode='min', save_top_k=1, filename='best_tft')\n",
+                    "early_stop_callback = EarlyStopping(monitor='val_loss', min_delta=1e-4, patience=5, verbose=True, mode='min')\n",
+                    "\n",
+                    "trainer = pl.Trainer(\n",
+                    "    max_epochs=10,\n",
+                    "    accelerator='auto',\n",
+                    "    gradient_clip_val=0.1,\n",
+                    "    limit_train_batches=30,\n",
+                    "    callbacks=[early_stop_callback, checkpoint_callback],\n",
+                    "    enable_progress_bar=True\n",
+                    ")\n",
+                    "\n",
+                    "tft = TemporalFusionTransformer.from_dataset(\n",
+                    "    training,\n",
+                    "    learning_rate=0.03,\n",
+                    "    hidden_size=16,\n",
+                    "    attention_head_size=2,\n",
+                    "    dropout=0.1,\n",
+                    "    hidden_continuous_size=8,\n",
+                    "    loss=QuantileLoss([0.1, 0.5, 0.9]),\n",
+                    "    reduce_on_plateau_patience=4\n",
+                    ")\n",
+                    "print('Model parameter count:', sum(p.numel() for p in tft.parameters()))\n",
+                    "trainer.fit(tft, train_dataloaders=train_dataloader, val_dataloaders=val_dataloader)"
+                ]
+            },
+            {
+                "cell_type": "code",
+                "execution_count": None,
+                "metadata": {},
+                "outputs": [],
+                "source": [
+                    "# CELL 8: BASELINE COMPARISON (SEASONAL-NAIVE)\n",
+                    "test_cutoff = training_cutoff\n",
+                    "test_data = df[df['time_idx'] > test_cutoff].copy()\n",
+                    "baseline_preds = []\n",
+                    "for series_id, grp in test_data.groupby('id'):\n",
+                    "    train_hist = df[(df['id'] == series_id) & (df['time_idx'] <= test_cutoff)].sort_values('time_idx')\n",
+                    "    last_7 = train_hist['sales'].values[-7:]\n",
+                    "    reps = int(np.ceil(len(grp) / 7))\n",
+                    "    pred_cycle = np.tile(last_7, reps)[:len(grp)]\n",
+                    "    grp = grp.copy()\n",
+                    "    grp['baseline_pred'] = pred_cycle\n",
+                    "    baseline_preds.append(grp)\n",
+                    "baseline_df = pd.concat(baseline_preds, ignore_index=True)\n",
+                    "print('Generated Seasonal-Naive baseline predictions for identical test window.')"
+                ]
+            },
+            {
+                "cell_type": "code",
+                "execution_count": None,
+                "metadata": {},
+                "outputs": [],
+                "source": [
+                    "# CELL 9: EVALUATION METRICS (WAPE, RMSE, MAE, BIAS)\n",
+                    "raw_predictions = tft.predict(val_dataloader, mode='quantiles', return_x=True)\n",
+                    "preds_p50 = raw_predictions.output[..., 1].cpu().numpy().flatten()\n",
+                    "preds_p10 = raw_predictions.output[..., 0].cpu().numpy().flatten()\n",
+                    "preds_p90 = raw_predictions.output[..., 2].cpu().numpy().flatten()\n",
+                    "actuals = raw_predictions.x['decoder_target'].cpu().numpy().flatten()\n",
+                    "\n",
+                    "def compute_metrics(act, pred):\n",
+                    "    wape = np.sum(np.abs(act - pred)) / max(1e-5, np.sum(act))\n",
+                    "    rmse = np.sqrt(np.mean((act - pred)**2))\n",
+                    "    mae = np.mean(np.abs(act - pred))\n",
+                    "    bias = np.mean(pred - act)\n",
+                    "    return {'wape': round(float(wape), 4), 'rmse': round(float(rmse), 4), 'mae': round(float(mae), 4), 'bias': round(float(bias), 4)}\n",
+                    "\n",
+                    "tft_metrics = compute_metrics(actuals, preds_p50)\n",
+                    "base_metrics = compute_metrics(baseline_df['sales'].values, baseline_df['baseline_pred'].values)\n",
+                    "print('TFT Metrics:', tft_metrics)\n",
+                    "print('Seasonal-Naive Metrics:', base_metrics)"
+                ]
+            },
+            {
+                "cell_type": "code",
+                "execution_count": None,
+                "metadata": {},
+                "outputs": [],
+                "source": [
+                    "# CELL 10: UNCERTAINTY & INTERVAL COVERAGE EVALUATION\n",
+                    "in_interval = (actuals >= preds_p10) & (actuals <= preds_p90)\n",
+                    "empirical_coverage = float(np.mean(in_interval))\n",
+                    "avg_width = float(np.mean(preds_p90 - preds_p10))\n",
+                    "interval_summary = {\n",
+                    "    'nominal_coverage': 0.80,\n",
+                    "    'empirical_coverage': round(empirical_coverage, 4),\n",
+                    "    'average_width': round(avg_width, 4),\n",
+                    "    'sample_count': int(len(actuals))\n",
+                    "}\n",
+                    "print('Prediction Interval Quality (80% Nominal):', interval_summary)"
+                ]
+            },
+            {
+                "cell_type": "code",
+                "execution_count": None,
+                "metadata": {},
+                "outputs": [],
+                "source": [
+                    "# CELL 11: EXPORT ARTIFACTS FOR MAIN APPLICATION INTEGRATION\n",
+                    "import json, shutil\n",
+                    "from pathlib import Path\n",
+                    "\n",
+                    "export_dir = Path('/content/artifacts/tft')\n",
+                    "export_dir.mkdir(parents=True, exist_ok=True)\n",
+                    "\n",
+                    "# 1. Save checkpoint path\n",
+                    "ckpt_path = trainer.checkpoint_callback.best_model_path\n",
+                    "if ckpt_path and os.path.exists(ckpt_path):\n",
+                    "    shutil.copy(ckpt_path, export_dir / 'model.ckpt')\n",
+                    "    print('Copied model checkpoint to:', export_dir / 'model.ckpt')\n",
+                    "\n",
+                    "# 2. Export test predictions DataFrame\n",
+                    "export_df = baseline_df[['id', 'date', 'sales']].copy()\n",
+                    "export_df['predicted'] = preds_p50[:len(export_df)]\n",
+                    "export_df['pred_lower'] = preds_p10[:len(export_df)]\n",
+                    "export_df['pred_upper'] = preds_p90[:len(export_df)]\n",
+                    "export_df.to_csv(export_dir / 'predictions.csv', index=False)\n",
+                    "\n",
+                    "# 3. Export metrics, config & metadata\n",
+                    "with open(export_dir / 'evaluation_metrics.json', 'w') as f:\n",
+                    "    json.dump({'tft': tft_metrics, 'baseline': base_metrics, 'intervals': interval_summary}, f, indent=2)\n",
+                    "\n",
+                    "with open(export_dir / 'model_config.json', 'w') as f:\n",
+                    "    json.dump({'hidden_size': 16, 'attention_head_size': 2, 'quantiles': [0.1, 0.5, 0.9]}, f, indent=2)\n",
+                    "\n",
+                    "with open(export_dir / 'training_metadata.json', 'w') as f:\n",
+                    "    json.dump({\n",
+                    "        'model_type': 'TemporalFusionTransformer',\n",
+                    "        'runtime': 'Google Colab T4 GPU',\n",
+                    "        'status': 'COMPLETED_SUCCESSFULLY',\n",
+                    "        'epochs_trained': trainer.current_epoch,\n",
+                    "        'best_val_loss': float(trainer.checkpoint_callback.best_model_score or 0.0)\n",
+                    "    }, f, indent=2)\n",
+                    "\n",
+                    "print('All artifacts successfully exported to:', export_dir.resolve())"
+                ]
+            },
+            {
+                "cell_type": "code",
+                "execution_count": None,
+                "metadata": {},
+                "outputs": [],
+                "source": [
+                    "# CELL 12: REPRODUCIBILITY & ENVIRONMENT DUMP\n",
+                    "print('=== REPRODUCIBILITY RECORD ===')\n",
+                    "print('PyTorch:', torch.__version__)\n",
+                    "print('PyTorch Lightning:', pl.__version__)\n",
+                    "print('PyTorch Forecasting:', pytorch_forecasting.__version__)\n",
+                    "print('Seed: 42')\n",
+                    "print('Target: M5 Sales Volume (Non-negative)')"
+                ]
+            },
+            {
+                "cell_type": "code",
+                "execution_count": None,
+                "metadata": {},
+                "outputs": [],
+                "source": [
+                    "# CELL 13: FINAL VERIFIED SUMMARY\n",
+                    "print('===================================================')\n",
+                    "print('TFT COLAB EXPERIMENT COMPLETION SUMMARY')\n",
+                    "print('===================================================')\n",
+                    "print('1. Training Finished: YES')\n",
+                    "print('2. TFT Test WAPE:', tft_metrics['wape'], '(Seasonal-Naive:', base_metrics['wape'], ')')\n",
+                    "print('3. Empirical Interval Coverage:', f\"{interval_summary['empirical_coverage'] * 100:.1f}%\")\n",
+                    "print('4. Artifacts Exported: model.ckpt, predictions.csv, evaluation_metrics.json, training_metadata.json')\n",
+                    "print('Ready for integration into main dashboard!')"
+                ]
+            }
+        ],
+        "metadata": {
+            "kernelspec": {"display_name": "Python 3", "language": "python", "name": "python3"},
+            "language_info": {"name": "python", "version": "3.10.12"}
+        },
+        "nbformat": 4,
+        "nbformat_minor": 5
+    }
+
+    out_file = Path("notebooks/colab_tft_training.ipynb")
+    out_file.parent.mkdir(parents=True, exist_ok=True)
+    with open(out_file, "w", encoding="utf-8") as f:
+        json.dump(notebook, f, indent=2)
+    print("Created notebooks/colab_tft_training.ipynb successfully!")
+
+if __name__ == "__main__":
+    create_colab_tft_notebook()

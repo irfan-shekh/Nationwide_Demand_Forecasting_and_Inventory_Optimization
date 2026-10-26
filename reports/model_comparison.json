@@ -1,0 +1,63 @@
+[
+  {
+    "Model": "Naive (Last-Value)",
+    "Type": "Baseline",
+    "sample_count": 3360,
+    "wape": 1.5284,
+    "rmse": 1.8542,
+    "mae": 0.9935,
+    "bias": 0.275,
+    "rmsse": 0.8975,
+    "training_time_sec": 0.023
+  },
+  {
+    "Model": "Seasonal-Naive (7-Day)",
+    "Type": "Baseline",
+    "sample_count": 3360,
+    "wape": 1.3095,
+    "rmse": 1.5565,
+    "mae": 0.8512,
+    "bias": 0.075,
+    "rmsse": 0.7534,
+    "training_time_sec": 0.045
+  },
+  {
+    "Model": "Prophet",
+    "Type": "Time-Series Decomposition",
+    "sample_count": 560,
+    "wape": 1.2864,
+    "rmse": 3.2239,
+    "mae": 2.2672,
+    "bias": 0.8073,
+    "rmsse": 1.3089,
+    "coverage_80": 0.5054,
+    "avg_width": 3.0586,
+    "training_time_sec": 8.8
+  },
+  {
+    "Model": "LightGBM",
+    "Type": "Global Gradient Boosting",
+    "sample_count": 3360,
+    "wape": 1.0159,
+    "rmse": 1.028,
+    "mae": 0.6604,
+    "bias": 0.0299,
+    "rmsse": 0.4976,
+    "coverage_80": 0.9051,
+    "avg_width": 1.781,
+    "training_time_sec": 1.83
+  },
+  {
+    "Model": "Temporal Fusion Transformer (TFT)",
+    "Type": "Deep Learning (Colab Exported)",
+    "sample_count": 3360,
+    "wape": 1.0096,
+    "rmse": 1.0301,
+    "mae": 0.6562,
+    "bias": 0.0036,
+    "rmsse": 0.4986,
+    "coverage_80": 0.9202,
+    "avg_width": 1.8702,
+    "training_time_sec": 42.15
+  }
+]

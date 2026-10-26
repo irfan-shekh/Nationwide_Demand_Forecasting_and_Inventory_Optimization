@@ -1,0 +1,23 @@
+{
+  "bottom_up_consistent": true,
+  "bottom_up_checks": {
+    "store_vs_state": {
+      "store_total": 2284.54,
+      "state_total": 2284.54,
+      "diff": 0.0,
+      "consistent": true
+    },
+    "state_vs_national": {
+      "state_total": 2284.54,
+      "national_total": 2284.54,
+      "diff": 0.0,
+      "consistent": true
+    }
+  },
+  "mint_summing_matrix_shape": [
+    128,
+    120
+  ],
+  "mint_coherence_diff": 0.0,
+  "mint_verified": true
+}

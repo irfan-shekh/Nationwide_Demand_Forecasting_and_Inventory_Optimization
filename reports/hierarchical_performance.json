@@ -1,0 +1,174 @@
+{
+  "National": [
+    {
+      "level": "National",
+      "entity": "All_Stores",
+      "sample_count": 3360,
+      "wape": 1.0159,
+      "rmse": 1.028,
+      "mae": 0.6604,
+      "bias": 0.0299
+    }
+  ],
+  "state_id": [
+    {
+      "level": "state_id",
+      "entity": "CA",
+      "sample_count": 1680,
+      "wape": 1.0288,
+      "rmse": 1.0881,
+      "mae": 0.7202,
+      "bias": 0.0336
+    },
+    {
+      "level": "state_id",
+      "entity": "TX",
+      "sample_count": 840,
+      "wape": 1.3484,
+      "rmse": 0.7375,
+      "mae": 0.4944,
+      "bias": 0.0656
+    },
+    {
+      "level": "state_id",
+      "entity": "WI",
+      "sample_count": 840,
+      "wape": 0.848,
+      "rmse": 1.1469,
+      "mae": 0.7067,
+      "bias": -0.0132
+    }
+  ],
+  "store_id": [
+    {
+      "level": "store_id",
+      "entity": "CA_1",
+      "sample_count": 840,
+      "wape": 1.0981,
+      "rmse": 0.9947,
+      "mae": 0.6955,
+      "bias": 0.0412
+    },
+    {
+      "level": "store_id",
+      "entity": "CA_2",
+      "sample_count": 840,
+      "wape": 0.9715,
+      "rmse": 1.1741,
+      "mae": 0.7448,
+      "bias": 0.0261
+    },
+    {
+      "level": "store_id",
+      "entity": "TX_1",
+      "sample_count": 840,
+      "wape": 1.3484,
+      "rmse": 0.7375,
+      "mae": 0.4944,
+      "bias": 0.0656
+    },
+    {
+      "level": "store_id",
+      "entity": "WI_1",
+      "sample_count": 840,
+      "wape": 0.848,
+      "rmse": 1.1469,
+      "mae": 0.7067,
+      "bias": -0.0132
+    }
+  ],
+  "dept_id": [
+    {
+      "level": "dept_id",
+      "entity": "FOODS_1",
+      "sample_count": 448,
+      "wape": 1.1356,
+      "rmse": 1.0747,
+      "mae": 0.5779,
+      "bias": 0.04
+    },
+    {
+      "level": "dept_id",
+      "entity": "FOODS_2",
+      "sample_count": 448,
+      "wape": 0.7695,
+      "rmse": 1.4899,
+      "mae": 1.0598,
+      "bias": -0.0669
+    },
+    {
+      "level": "dept_id",
+      "entity": "FOODS_3",
+      "sample_count": 448,
+      "wape": 1.3233,
+      "rmse": 0.6894,
+      "mae": 0.4815,
+      "bias": 0.0919
+    },
+    {
+      "level": "dept_id",
+      "entity": "HOBBIES_1",
+      "sample_count": 672,
+      "wape": 0.9946,
+      "rmse": 1.0739,
+      "mae": 0.7608,
+      "bias": 0.0358
+    },
+    {
+      "level": "dept_id",
+      "entity": "HOBBIES_2",
+      "sample_count": 448,
+      "wape": 1.6948,
+      "rmse": 0.4744,
+      "mae": 0.3216,
+      "bias": 0.0633
+    },
+    {
+      "level": "dept_id",
+      "entity": "HOUSEHOLD_1",
+      "sample_count": 448,
+      "wape": 0.9701,
+      "rmse": 1.2679,
+      "mae": 0.8575,
+      "bias": 0.0021
+    },
+    {
+      "level": "dept_id",
+      "entity": "HOUSEHOLD_2",
+      "sample_count": 448,
+      "wape": 1.2705,
+      "rmse": 0.7167,
+      "mae": 0.5133,
+      "bias": 0.0405
+    }
+  ],
+  "cat_id": [
+    {
+      "level": "cat_id",
+      "entity": "FOODS",
+      "sample_count": 1344,
+      "wape": 0.9419,
+      "rmse": 1.1328,
+      "mae": 0.7064,
+      "bias": 0.0216
+    },
+    {
+      "level": "cat_id",
+      "entity": "HOBBIES",
+      "sample_count": 1120,
+      "wape": 1.094,
+      "rmse": 0.8843,
+      "mae": 0.5851,
+      "bias": 0.0468
+    },
+    {
+      "level": "cat_id",
+      "entity": "HOUSEHOLD",
+      "sample_count": 896,
+      "wape": 1.0643,
+      "rmse": 1.0298,
+      "mae": 0.6854,
+      "bias": 0.0213
+    }
+  ]
+}

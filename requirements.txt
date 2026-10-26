@@ -1,0 +1,29 @@
+# Core Machine Learning & Data Processing
+pandas>=2.2.0
+numpy>=2.0.0
+scipy>=1.14.0
+scikit-learn>=1.6.0
+lightgbm>=4.5.0
+
+# Time-Series Forecasting & Uncertainty
+prophet>=1.5.0
+cmdstanpy>=1.3.0
+statsmodels>=0.14.0
+
+# Operations Research & Constrained Optimization
+ortools>=9.11.0
+
+# Interactive Dashboard & Visualizations
+plotly>=5.24.0
+dash>=2.18.0
+dash-bootstrap-components>=1.6.0
+
+# Testing & Quality Assurance
+pytest>=8.3.0
+pyarrow>=17.0.0
+joblib>=1.4.0
+
+# Optional Deep Learning (for Colab TFT GPU training)
+# torch>=2.2.0
+# lightning>=2.2.0
+# pytorch-forecasting>=1.0.0

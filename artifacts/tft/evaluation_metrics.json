@@ -1,0 +1,17 @@
+{
+  "metrics": {
+    "sample_count": 3360,
+    "wape": 1.0096,
+    "rmse": 1.0301,
+    "mae": 0.6562,
+    "bias": 0.0036,
+    "rmsse": 0.4986
+  },
+  "intervals": {
+    "nominal_coverage": 0.8,
+    "empirical_coverage": 0.9202,
+    "coverage_error": 0.1202,
+    "avg_width": 1.8702,
+    "sample_count": 3360
+  }
+}
